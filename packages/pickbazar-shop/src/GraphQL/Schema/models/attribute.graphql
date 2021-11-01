@@ -1,0 +1,25 @@
+extend type Query {
+    attributes: [Attribute] @all
+    attribute(id: ID @eq, slug: String @eq): Attribute @find
+}
+
+type Attribute {
+    id: ID
+    name: String
+    slug: String
+    values: [AttributeValue]
+}
+
+input AttributeInput {
+    name: String! @rules(apply: ["min:2", "max:20", "unique:types,name"])
+}
+
+extend type Mutation {
+    createAttribute(input: AttributeInput @spread): Attribute
+        @create
+        @can(ability: "super_admin")
+    updateAttribute(id: ID!, input: AttributeInput @spread): Attribute
+        @update
+        @can(ability: "super_admin")
+    deleteAttribute(id: ID!): Attribute @delete @can(ability: "super_admin")
+}

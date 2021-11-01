@@ -1,0 +1,3 @@
+INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`, `is_active`) VALUES
+('1', 'Annette Harris', 'bschamberger@example.com', '2021-03-07 07:01:16', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'CH72mUW0xm', '2021-03-07 07:01:16', '2021-03-07 07:01:16', '1'),
+('2', 'Mr. Sidney Jacobs IV', 'clair17@example.org', '2021-03-07 07:01:16', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'GYfpCS6d18', '2021-03-07 07:01:16', '2021-03-07 07:01:16', '1');

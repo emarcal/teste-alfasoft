@@ -1,0 +1,45 @@
+extend type Query {
+    attributeValues: [AttributeValue!]! @all
+    attributeValue(id: ID @eq): AttributeValue @find
+}
+
+type VariationProductPivot {
+    price: Float
+}
+
+type AttributeValue {
+    id: ID
+    value: String
+    meta: String
+    attribute: Attribute @belongsTo
+    products: [Product] @belongsToMany
+    pivot: VariationProductPivot
+}
+
+input AttributeBelongTo {
+    connect: ID! @rules(apply: ["exists:attributes,id"])
+}
+
+input AttributeValueCreateInput {
+    value: String!
+    meta: String
+    attribute: AttributeBelongTo
+}
+input AttributeValueUpdateInput {
+    id: ID!
+    value: String
+    meta: String
+    attribute: AttributeBelongTo
+}
+
+extend type Mutation {
+    createAttributeValue(
+        input: AttributeValueCreateInput @spread
+    ): AttributeValue @create @can(ability: "super_admin")
+    updateAttributeValue(
+        input: AttributeValueUpdateInput @spread
+    ): AttributeValue @update @can(ability: "super_admin")
+    deleteAttributeValue(id: ID!): AttributeValue
+        @delete
+        @can(ability: "super_admin")
+}

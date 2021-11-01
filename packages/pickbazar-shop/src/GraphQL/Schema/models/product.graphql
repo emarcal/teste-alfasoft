@@ -1,0 +1,172 @@
+extend type Query {
+    products(
+        orderBy: _ @orderBy(columns: ["created_at", "name", "updated_at"])
+        text: String @where(operator: "like", key: "name")
+        status: String @eq
+        hasType: _ @whereHasConditions(columns: ["slug"])
+        hasCategories: _ @whereHasConditions(columns: ["slug"])
+    ): [Product!]!
+        @paginate(defaultCount: 15)
+        @orderBy(column: "created_at", direction: "DESC")
+    product(id: ID @eq, slug: String @eq): Product @find
+    # search(text: String! @search): [Product!]! @paginate(defaultCount: 15)
+}
+
+enum ProductStatus {
+    PUBLISH @enum(value: "publish")
+    DRAFT @enum(value: "draft")
+}
+
+type OrderProductPivot {
+    variation_option_id: ID
+    order_quantity: Int
+    unit_price: Float
+    subtotal: Float
+}
+
+type Variation {
+    id: ID
+    title: String
+    price: Float
+    sku: String
+    is_disable: Boolean
+    sale_price: Float
+    quantity: Int
+    options: [VariationOption]
+}
+
+type VariationOption {
+    name: String
+    value: String
+}
+
+type Product {
+    id: ID
+    name: String
+    slug: String
+    type: Type @belongsTo
+    product_type: ProductType
+    categories: [Category] @belongsToMany
+    variations: [AttributeValue] @belongsToMany
+    variation_options: [Variation] @hasMany
+    pivot: OrderProductPivot
+    orders: [Order] @belongsToMany
+    related_products(slug: String, limit: Int): [Product]
+        @field(
+            resolver: "PickBazar\\GraphQL\\Queries\\ProductQuery@relatedProducts"
+        )
+    description: String
+    in_stock: Boolean
+    is_taxable: Boolean
+    sale_price: Float
+    max_price: Float
+    min_price: Float
+    sku: String
+    gallery: [Attachment]
+    image: Attachment
+    status: ProductStatus
+    height: String
+    length: String
+    width: String
+    price: Float
+    quantity: Int
+    unit: String
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input SyncCategoryBelongsToMany {
+    sync: [ID!] @rules(apply: ["exists:categories,id"])
+}
+
+input UpsertVariationsHasMany {
+    upsert: [VariationInput]
+    delete: [ID!]
+}
+
+input VariationInput {
+    id: ID
+    title: String
+    sku: String
+    is_disable: Boolean
+    sale_price: Float
+    price: Float
+    quantity: Int
+    options: [VariationOptionInput]
+}
+
+input VariationOptionInput {
+    name: String
+    value: String
+}
+
+input SyncAttributeBelongsToMany {
+    sync: [AttributeProductPivot]
+}
+
+input AttributeProductPivot {
+    id: ID! @rules(apply: ["exists:attribute_values,id"])
+    price: Float
+}
+
+input CreateProductInput {
+    name: String! @rules(apply: ["required", "max:255"])
+    type_id: String! @rules(apply: ["required", "exists:types,id"])
+    price: Float
+    max_price: Float
+    min_price: Float
+    sale_price: Float
+    quantity: Int
+    product_type: ProductType
+    unit: String! @rules(apply: ["required"])
+    description: String @rules(apply: ["max:1000"])
+    categories: SyncCategoryBelongsToMany
+    variations: SyncAttributeBelongsToMany
+    variation_options: UpsertVariationsHasMany
+    in_stock: Boolean
+    is_taxable: Boolean
+    sale_price: Float
+    sku: String
+    gallery: [AttachmentInput]
+    image: AttachmentInput
+    status: ProductStatus
+    height: String
+    length: String
+    width: String
+}
+
+input UpdateProductInput {
+    id: ID! @rules(apply: ["required"])
+    name: String
+    type_id: String! @rules(apply: ["required", "exists:types,id"])
+    price: Float
+    max_price: Float
+    min_price: Float
+    quantity: Int
+    product_type: ProductType
+    unit: String! @rules(apply: ["required"])
+    description: String @rules(apply: ["max:1000"])
+    categories: SyncCategoryBelongsToMany
+    variations: SyncAttributeBelongsToMany
+    variation_options: UpsertVariationsHasMany
+    in_stock: Boolean
+    is_taxable: Boolean
+    sale_price: Float
+    sku: String
+    gallery: [AttachmentInput]
+    image: AttachmentInput
+    status: ProductStatus
+    height: String
+    length: String
+    width: String
+}
+
+extend type Mutation {
+    deleteProduct(id: ID!): Product @delete @can(ability: "super_admin")
+    createProduct(input: CreateProductInput @spread): Product
+        @create
+        @can(ability: "super_admin")
+    updateProduct(input: UpdateProductInput @spread): Product
+        @update
+        @can(ability: "super_admin")
+}

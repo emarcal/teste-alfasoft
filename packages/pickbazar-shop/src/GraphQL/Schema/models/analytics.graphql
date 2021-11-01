@@ -1,0 +1,18 @@
+extend type Query {
+    analytics: Analytics @field(resolver: "AnalyticsQuery@analytics")
+    popular_products(limit: Int): [Product]
+        @field(resolver: "AnalyticsQuery@popularProducts")
+}
+
+type totalYearSaleByMonth {
+    total: Float
+    month: String
+}
+
+type Analytics {
+    totalRevenue: Float
+    todaysRevenue: Float
+    totalOrders: Int
+    newCustomers: Int
+    totalYearSaleByMonth: [totalYearSaleByMonth]
+}
